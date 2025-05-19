@@ -143,14 +143,24 @@
             overflow: auto !important;
         }
         
-        #editor {
-            outline: none;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            color: var(--text-light);
-            height: 100%;
-            display: block;
-        }
+      #editor {
+        outline: none;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        color: var(--text-light) !important; /* Add !important to override Prism */
+        background: transparent !important;
+        height: 100%;
+        display: block;
+        font-family: 'Fira Code', monospace;
+    }
+
+    /* Disable Prism highlighting for the editor */
+    #editor.token, 
+    #editor[class*="language-"] {
+        color: var(--text-light) !important;
+        background: transparent !important;
+        text-shadow: none !important;
+    }
 
         .iframe-load-info {
             padding: 20px;
