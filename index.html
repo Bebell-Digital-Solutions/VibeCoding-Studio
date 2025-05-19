@@ -213,20 +213,20 @@
             </div>
         </div>
         
-        <div class="panel">
-            <div class="panel-header">
-                <span>💬 HTML Editor</span>
-                <div class="panel-actions">
-                    <button id="download-btn" class="panel-action-btn" title="Download HTML">
-                        <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 5px;">
-                            <path fill="currentColor" d="M19,9H15V3H9V9H5L12,16L19,9M5,20V18H19V20H5Z"/>
-                        </svg>
-                        Export
-                    </button>
-                </div>
+ <div class="panel">
+        <div class="panel-header">
+            <span>💬 HTML Editor</span>
+            <div class="panel-actions">
+                <button id="download-btn" class="panel-action-btn" title="Download HTML">
+                    <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 5px;">
+                        <path fill="currentColor" d="M19,9H15V3H9V9H5L12,16L19,9M5,20V18H19V20H5Z"/>
+                    </svg>
+                    Export
+                </button>
             </div>
-            <div class="panel-content">
-                <pre><code class="language-html" id="editor">&lt;!DOCTYPE html&gt;
+        </div>
+        <div class="panel-content">
+            <textarea id="editor" spellcheck="false">&lt;!DOCTYPE html&gt;
 &lt;html lang="en"&gt;
 &lt;head&gt;
     &lt;meta charset="UTF-8"&gt;
@@ -242,8 +242,9 @@
     &lt;p&gt;This is a sample HTML document. Edit me!&lt;/p&gt;
     &lt;script&gt;console.log('Sample script executed!');&lt;/script&gt;
 &lt;/body&gt;
-&lt;/html&gt;</code></pre>
-            </div>
+&lt;/html&gt;</textarea>
+        </div>
+
         </div>
         
         <div class="panel">
@@ -254,7 +255,8 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+
+    
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Get elements
@@ -354,23 +356,25 @@
 
         // Editor to Viewer Logic
         function updateViewer() {
+            const viewer = document.getElementById('viewer');
             if (!editor || !viewer) return;
             
             try {
                 const viewerDocument = viewer.contentDocument || viewer.contentWindow.document;
-                const htmlContent = editor.textContent || '';
-                
                 viewerDocument.open();
-                viewerDocument.write(htmlContent);
+                viewerDocument.write(editor.value);
                 viewerDocument.close();
             } catch (e) {
                 console.error('Error updating viewer:', e);
             }
         }
+
+
         
-        if (editor) {
+        
+if (editor) {
             editor.addEventListener('input', updateViewer);
-            setTimeout(updateViewer, 100);
+            updateViewer(); // Initial update
         }
     
         // Download Button Logic
