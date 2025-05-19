@@ -38,12 +38,24 @@
 
 
         
+        
         .brand {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: white;
-        }
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+.brand-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.brand-text {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+}
 
 
         .container {
@@ -179,10 +191,16 @@
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <div class="brand">🛠️ <span>VibeCoding Studio</span></div>
-        <div id="auth-widget"></div>
+
+<div class="top-bar">
+    <div class="brand">
+        <img src="https://bucket.mlcdn.com/a/3336/3336910/images/2a926c37fc929607aeed2f835f3a06e0e9f3cff8.png" alt="VibeCoding Studio Logo" class="brand-logo">
+        <span class="brand-text">VibeCoding Studio</span>
     </div>
+    <div id="auth-widget"></div>
+</div>
+
+
     
     <div class="container">
         <div class="panel">
@@ -448,9 +466,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+       
 </script>
 
 
+<!-- Loading Overlay (Paste THIS PART) -->
+<div id='pd_masking_overlay_product-38000' style='position:absolute;top:0;width:100%;height:100%;opacity:1;z-index:100;background:#fff;display:flex;align-items:center;justify-content:center;'>
+   <div class="bars"></div>
+</div>
+
+<style>
+.bars {
+   width: 50.4px;
+   height: 67.2px;
+   --c: linear-gradient(#df1783 0 0);
+   background: var(--c) 0%   50%,
+         var(--c) 50%  50%,
+         var(--c) 100% 50%;
+   background-size: 10.1px 50%;
+   background-repeat: no-repeat;
+   animation: bars-animation 1s infinite linear alternate;
+}
+@keyframes bars-animation {
+   20% { background-size: 10.1px 20%, 10.1px 50%, 10.1px 50%; }
+   40% { background-size: 10.1px 100%, 10.1px 20%, 10.1px 50%; }
+   60% { background-size: 10.1px 50%, 10.1px 100%, 10.1px 20%; }
+   80% { background-size: 10.1px 50%, 10.1px 50%, 10.1px 100%; }
+}
+</style>
+
+<script>
+   (function(d,t){
+      var hs=d.createElement(t),s=d.getElementsByTagName(t)[0];
+      hs.src='https://app.productdyno.com/assets/js/protect.js';
+      hs.setAttribute('data-auth-type', 'product');
+      hs.setAttribute('data-auth-type-id', '38000');
+      s.parentNode.insertBefore(hs,s);
+   }(document,'script'));
+</script>
+</body>      
+
+
+
+    
     
 </body>
 </html>
