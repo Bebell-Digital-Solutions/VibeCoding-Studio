@@ -386,5 +386,37 @@
         }
     });
     </script>
+
+
+
+<script>
+    const apiKeys = {
+        openai: null,
+        deepseek: null
+    };
+
+    document.getElementById("llm-selector").addEventListener("change", function () {
+        const selectedValue = this.value;
+
+        if (selectedValue.includes("openai")) {
+            const key = prompt("Por favor ingresa tu API Key de OpenAI:");
+            if (key) {
+                apiKeys.openai = key;
+                alert("API Key guardada para OpenAI.");
+            }
+        } else if (selectedValue.includes("deepseek")) {
+            const key = prompt("Por favor ingresa tu API Key de DeepSeek:");
+            if (key) {
+                apiKeys.deepseek = key;
+                alert("API Key guardada para DeepSeek.");
+            }
+        }
+    });
+</script>
+
+
+
+
+    
 </body>
 </html>
