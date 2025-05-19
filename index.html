@@ -353,81 +353,50 @@
             });
         }
 
-        // Editor to Viewer Logic
-        function updateViewer() {
-            const viewer = document.getElementById('viewer');
-            if (!editor || !viewer) return;
-            
-            try {
-                const viewerDocument = viewer.contentDocument || viewer.contentWindow.document;
-                viewerDocument.open();
-                viewerDocument.write(editor.value);
-                viewerDocument.close();
-            } catch (e) {
-                console.error('Error updating viewer:', e);
-            }
-        }
+// Editor to Viewer Logic
+function updateViewer() {
+    const viewer = document.getElementById('viewer');
+    if (!editor || !viewer) return;
+    
+    try {
+        const viewerDocument = viewer.contentDocument || viewer.contentWindow.document;
+        viewerDocument.open();
+        viewerDocument.write(editor.value); // Changed from textContent to value
+        viewerDocument.close();
+    } catch (e) {
+        console.error('Error updating viewer:', e);
+    }
+}
 
-
-        
-        
 if (editor) {
-            editor.addEventListener('input', updateViewer);
-            updateViewer(); // Initial update
-        }
+    editor.addEventListener('input', updateViewer);
+    updateViewer(); // Initial update
+}
+
+        
     
         // Download Button Logic
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', function() {
-                if (!editor) return;
-                
-                try {
-                    const htmlToDownload = editor.textContent || '';
-                    const blob = new Blob([htmlToDownload], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'vibecoding-document.html';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                } catch (e) {
-                    console.error('Error creating download:', e);
-                }
-            });
+if (downloadBtn) {
+    downloadBtn.addEventListener('click', function() {
+        if (!editor) return;
+        
+        try {
+            const htmlToDownload = editor.value; // Changed from textContent to value
+            const blob = new Blob([htmlToDownload], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vibecoding-document.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error('Error creating download:', e);
         }
     });
+}
     </script>
-
-
-
-<script>
-    const apiKeys = {
-        openai: null,
-        deepseek: null
-    };
-
-    document.getElementById("llm-selector").addEventListener("change", function () {
-        const selectedValue = this.value;
-
-        if (selectedValue.includes("openai")) {
-            const key = prompt("Por favor ingresa tu API Key de OpenAI:");
-            if (key) {
-                apiKeys.openai = key;
-                alert("API Key guardada para OpenAI.");
-            }
-        } else if (selectedValue.includes("deepseek")) {
-            const key = prompt("Por favor ingresa tu API Key de DeepSeek:");
-            if (key) {
-                apiKeys.deepseek = key;
-                alert("API Key guardada para DeepSeek.");
-            }
-        }
-    });
-</script>
-
-
 
 
     
