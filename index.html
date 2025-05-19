@@ -258,47 +258,41 @@
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Get elements
-        const urlInput = document.getElementById('url-input');
-        const goButton = document.getElementById('go-button');
-        const browserFrame = document.getElementById('browser');
-        const browserInfo = document.getElementById('browser-info');
-        const editor = document.getElementById('editor');
-        const viewer = document.getElementById('viewer');
-        const llmSelector = document.getElementById('llm-selector');
-        const downloadBtn = document.getElementById('download-btn');
-        const openTabBtn = document.getElementById('open-tab-btn');
+    // Get elements
+    const urlInput = document.getElementById('url-input');
+    const goButton = document.getElementById('go-button');
+    const browserFrame = document.getElementById('browser');
+    const browserInfo = document.getElementById('browser-info');
+    const editor = document.getElementById('editor');
+    const viewer = document.getElementById('viewer');
+    const llmSelector = document.getElementById('llm-selector');
+    const downloadBtn = document.getElementById('download-btn');
+    const openTabBtn = document.getElementById('open-tab-btn');
 
-        // Initialize Prism for syntax highlighting
-        if (typeof Prism !== 'undefined') {
-            Prism.highlightAll();
+    // Initialize viewer with empty document
+    viewer.contentDocument.open();
+    viewer.contentDocument.write('<html><body style="background:white;padding:20px;"></body></html>');
+    viewer.contentDocument.close();
+
+    // Browser Navigation Logic
+    function navigateBrowser() {
+        const url = urlInput.value.trim();
+        if (!url) return;
+
+        let processedUrl = url;
+        if (!url.match(/^https?:\/\//)) {
+            processedUrl = `https://${url}`;
         }
 
-        // Make editor editable
-        if (editor) {
-            editor.contentEditable = true;
-        }
+        const blockedDomains = [
+            'chat.openai.com', 
+            'claude.ai',
+            'gemini.google.com',
+            'chat.deepseek.com',
+            'perplexity.ai'
+        ];
         
-        // Browser Navigation Logic
-        function navigateBrowser() {
-            const url = urlInput.value.trim();
-            if (!url) return;
-
-            // Add https:// if not present
-            let processedUrl = url;
-            if (!url.match(/^https?:\/\//)) {
-                processedUrl = `https://${url}`;
-            }
-
-            // Known domains that block iframe embedding
-            const blockedDomains = [
-                'chat.openai.com', 
-                'claude.ai',
-                'gemini.google.com',
-                'chat.deepseek.com',
-                'perplexity.ai'
-            ];
-            
+        try {
             const domain = new URL(processedUrl).hostname;
             const isBlocked = blockedDomains.some(d => domain.includes(d));
             
@@ -309,10 +303,8 @@
                 browserInfo.style.display = 'none';
                 browserFrame.src = processedUrl;
                 
-                // Add error event listener
                 browserFrame.onload = function() {
                     try {
-                        // Try to access the iframe content - will throw if blocked
                         const iframeDoc = browserFrame.contentDocument || browserFrame.contentWindow.document;
                         if (iframeDoc && iframeDoc.readyState === 'complete') {
                             browserInfo.style.display = 'none';
@@ -326,62 +318,51 @@
                     browserInfo.style.display = 'block';
                 };
             }
+        } catch (e) {
+            console.error('Invalid URL:', e);
         }
-        
-        // Event listeners
-        if (goButton) goButton.addEventListener('click', navigateBrowser);
-        if (urlInput) urlInput.addEventListener('keypress', (e) => e.key === 'Enter' && navigateBrowser());
-        
-        // LLM Selector Logic
-        if (llmSelector) {
-            llmSelector.addEventListener('change', function() {
-                const selectedValue = this.value;
-                if (selectedValue && urlInput) {
-                    urlInput.value = selectedValue;
-                    navigateBrowser();
-                }
-            });
-        }
-        
-        // Open in new tab button
-        if (openTabBtn) {
-            openTabBtn.addEventListener('click', function() {
-                const url = urlInput.value.trim();
-                if (url) {
-                    window.open(url, '_blank');
-                }
-            });
-        }
-
-// Editor to Viewer Logic
-function updateViewer() {
-    const viewer = document.getElementById('viewer');
-    if (!editor || !viewer) return;
-    
-    try {
-        const viewerDocument = viewer.contentDocument || viewer.contentWindow.document;
-        viewerDocument.open();
-        viewerDocument.write(editor.value); // Changed from textContent to value
-        viewerDocument.close();
-    } catch (e) {
-        console.error('Error updating viewer:', e);
     }
-}
+    
+    // Event listeners
+    goButton.addEventListener('click', navigateBrowser);
+    urlInput.addEventListener('keypress', (e) => e.key === 'Enter' && navigateBrowser());
+    
+    // LLM Selector Logic
+    llmSelector.addEventListener('change', function() {
+        const selectedValue = this.value;
+        if (selectedValue) {
+            urlInput.value = selectedValue;
+            navigateBrowser();
+        }
+    });
+    
+    // Open in new tab button
+    openTabBtn.addEventListener('click', function() {
+        const url = urlInput.value.trim();
+        if (url) {
+            window.open(url, '_blank');
+        }
+    });
 
-if (editor) {
+    // Editor to Viewer Logic
+    function updateViewer() {
+        try {
+            const viewerDocument = viewer.contentDocument || viewer.contentWindow.document;
+            viewerDocument.open();
+            viewerDocument.write(editor.value);
+            viewerDocument.close();
+        } catch (e) {
+            console.error('Error updating viewer:', e);
+        }
+    }
+
     editor.addEventListener('input', updateViewer);
     updateViewer(); // Initial update
-}
-
-        
     
-        // Download Button Logic
-if (downloadBtn) {
+    // Download Button Logic
     downloadBtn.addEventListener('click', function() {
-        if (!editor) return;
-        
         try {
-            const htmlToDownload = editor.value; // Changed from textContent to value
+            const htmlToDownload = editor.value;
             const blob = new Blob([htmlToDownload], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -389,13 +370,16 @@ if (downloadBtn) {
             a.download = 'vibecoding-document.html';
             document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
         } catch (e) {
             console.error('Error creating download:', e);
+            alert('Error creating download. Please check console for details.');
         }
     });
-}
+});
     </script>
 
 
