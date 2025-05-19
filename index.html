@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-Panel Interface - VibeCoding Studio</title>
+    <link href="prism.css" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #df1783;
+            --dark-bg: #1a1a1a;
+            --panel-bg: #252526;
+            --text-light: #e0e0e0;
+            --border-color: #444;
+            --input-bg: #3a3a3a;
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Fira Code', monospace;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-size: 14px; /* Base font size */
+        }
+        
+        .top-bar {
+            background: var(--primary-color);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+            box-sizing: border-box;
+        }
+        
+        .brand {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 50px); /* Full height minus top bar */
+        }
+        
+        .panel {
+            flex: 1; /* Each panel takes equal width */
+            overflow: hidden; /* Important for iframe and pre content */
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            background: var(--panel-bg);
+        }
+        .panel:last-child {
+            border-right: none;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: var(--panel-bg); /* Slightly darker or different shade could work */
+            border-bottom: 1px solid #333; /* Darker border for header */
+            user-select: none;
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+        
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .panel-action-btn, #llm-selector, #go-button {
+            background: var(--input-bg);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px; /* Slightly larger padding */
+            font-size: 0.9em; /* Relative font size */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            font-family: 'Fira Code', monospace;
+        }
+        .panel-action-btn:hover, #llm-selector:hover, #go-button:hover {
+            background-color: #454545;
+            border-color: #555;
+        }
+        #go-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+         #go-button:hover {
+            background-color: #c81473; /* Darker shade of primary for hover */
+        }
+
+        .panel-content {
+            flex: 1; /* Takes remaining space in panel */
+            overflow: auto; /* Scrollbars if content overflows */
+            position: relative; /* For potential absolute positioned children */
+        }
+        
+        iframe {
+            background: white; /* Default background for iframes */
+            border: none;
+            width: 100%;
+            height: 100%;
+            display: block; /* Remove extra space below iframe */
+        }
+        
+        .url-bar {
+            display: flex;
+            padding: 10px;
+            background: var(--panel-bg);
+            border-bottom: 1px solid #333;
+            flex-shrink: 0; /* Prevent URL bar from shrinking */
+        }
+        
+        #url-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--input-bg);
+            color: var(--text-light);
+            font-family: 'Fira Code', monospace;
+        }
+        
+        pre[class*="language-"] {
+            margin: 0 !important; /* Override Prism's default margin */
+            height: 100%;
+            border-radius: 0;
+            background: #1e1e1e !important; /* Darker editor background */
+            padding: 15px !important; /* Ensure padding */
+            box-sizing: border-box;
+            overflow: auto !important; /* Ensure scrollability */
+        }
+        
+        #editor {
+            outline: none;
+            white-space: pre-wrap; /* Wrap text */
+            word-wrap: break-word; /* Break long words */
+            caret-color: var(--text-light); /* Make caret visible */
+            height: 100%; /* Fill parent */
+            display: block; /* Ensure it behaves like a block */
+        }
+
+        /* Message for iframe loading issues */
+        .iframe-load-info {
+            padding: 20px;
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="brand">🛠️ <span>VibeCoding Studio</span></div>
+        <div id="auth-widget"></div> </div>
+    
+    <div class="container">
+        <div class="panel">
+            <div class="panel-header">
+                <span>🤖 Assistant Model / Browser</span>
+                <div class="panel-actions">
+                    <select id="llm-selector" class="panel-action-btn">
+                        <option value="">Select LLM...</option>
+                        <option value="https://chat.openai.com">ChatGPT</option>
+                        <option value="https://chat.deepseek.com">DeepSeek</option>
+                        <option value="https://claude.ai">Claude AI</option>
+                        <option value="https://gemini.google.com">Gemini</option>
+                        <option value="https://perplexity.ai">Perplexity</option>
+                        <option value="https://example.com">Example.com (Test)</option> 
+                    </select>
+                </div>
+            </div>
+            <div class="url-bar">
+                <input type="text" id="url-input" placeholder="Enter URL (e.g., https://example.com)">
+                <button id="go-button">Go</button>
+            </div>
+            <div class="panel-content">
+                <iframe id="browser" src="about:blank"></iframe>
+                <div id="browser-info" class="iframe-load-info" style="display: none;">
+                    <p>Many websites (like AI chat platforms) prevent themselves from being loaded in iframes for security reasons (X-Frame-Options). If a site doesn't load, try opening it in a new tab.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <span>💬 HTML Editor</span>
+                <div class="panel-actions">
+                    <button id="download-btn" class="panel-action-btn" title="Download HTML">
+                        <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right: 5px;">
+                            <path fill="currentColor" d="M19,9H15V3H9V9H5L12,16L19,9M5,20V18H19V20H5Z"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <pre><code class="language-html" id="editor">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;My Page&lt;/title&gt;
+    &lt;style&gt;
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f0f0f0; }
+        h1 { color: #df1783; }
+        p { color: #333; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello World!&lt;/h1&gt;
+    &lt;p&gt;This is a sample HTML document. Edit me!&lt;/p&gt;
+    &lt;script&gt;console.log('Sample script executed!');&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">🔎 Live Preview</div>
+            <div class="panel-content">
+                <iframe id="viewer" title="Live HTML Preview"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script src="prism.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded and parsed.');
+
+        // Initialize Prism for syntax highlighting
+        try {
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+                console.log('Prism.highlightAll() called.');
+            } else {
+                console.warn('Prism.js is not loaded. Syntax highlighting disabled.');
+            }
+        } catch (e) {
+            console.error('Error initializing Prism:', e);
+        }
+        
+        // Get elements
+        const urlInput = document.getElementById('url-input');
+        const goButton = document.getElementById('go-button');
+        const browserFrame = document.getElementById('browser');
+        const browserInfo = document.getElementById('browser-info');
+        const editor = document.getElementById('editor');
+        const viewer = document.getElementById('viewer');
+        const llmSelector = document.getElementById('llm-selector');
+        const downloadBtn = document.getElementById('download-btn');
+
+        // --- Element Existence Checks ---
+        if (!urlInput) console.error('URL input field (#url-input) not found!');
+        if (!goButton) console.error('Go button (#go-button) not found!');
+        if (!browserFrame) console.error('Browser iframe (#browser) not found!');
+        if (!browserInfo) console.error('Browser info div (#browser-info) not found!');
+        if (!editor) console.error('Editor element (#editor) not found!');
+        if (!viewer) console.error('Viewer iframe (#viewer) not found!');
+        if (!llmSelector) console.error('LLM selector (#llm-selector) not found!');
+        if (!downloadBtn) console.error('Download button (#download-btn) not found!');
+
+        // Make editor editable
+        if (editor) {
+            editor.contentEditable = true;
+            console.log('Editor contentEditable set to true.');
+        }
+        
+        // --- Browser Navigation Logic ---
+        function navigateBrowser() {
+            if (!urlInput || !browserFrame || !browserInfo) {
+                console.error('Cannot navigate: Missing URL input, browser frame, or browser info element.');
+                return;
+            }
+
+            let url = urlInput.value.trim();
+            console.log('Attempting to navigate. Raw URL:', url);
+
+            if (url === '') {
+                console.log('URL is empty. Clearing browser frame.');
+                browserFrame.src = 'about:blank';
+                browserInfo.style.display = 'none'; // Hide info message
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+                console.log('Prepended https:// to URL:', url);
+            }
+            
+            urlInput.value = url; // Update input with potentially modified URL
+            browserFrame.src = url;
+            browserInfo.style.display = 'block'; // Show info message as a reminder about iframe blocking
+            console.log('Browser iframe src set to:', url);
+            
+            // It's hard to reliably detect X-Frame-Options failure from JS.
+            // The info message serves as a general caution.
+        }
+        
+        if (goButton) {
+            goButton.addEventListener('click', navigateBrowser);
+        }
+        if (urlInput) {
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    navigateBrowser();
+                }
+            });
+        }
+        
+        // --- LLM Selector Logic ---
+        if (llmSelector) {
+            llmSelector.addEventListener('change', function() {
+                const selectedValue = this.value;
+                console.log('LLM selector changed. Value:', selectedValue);
+                if (selectedValue && urlInput && browserFrame) {
+                    urlInput.value = selectedValue; // Populate the URL bar
+                    navigateBrowser(); // Use the same navigation logic
+                } else if (!selectedValue && urlInput) {
+                    // urlInput.value = ''; // Clear URL bar if "Select LLM..." is chosen
+                    // browserFrame.src = 'about:blank';
+                    // if(browserInfo) browserInfo.style.display = 'none';
+                    console.log('LLM selector cleared or placeholder selected.');
+                }
+            });
+        }
+        
+        // --- Editor to Viewer Logic ---
+        function updateViewer() {
+            if (!editor || !viewer) {
+                console.error('Cannot update viewer: Missing editor or viewer iframe element.');
+                return;
+            }
+            try {
+                const viewerDocument = viewer.contentDocument || viewer.contentWindow?.document;
+                if (!viewerDocument) {
+                    console.error('Viewer document is not accessible. Cannot update.');
+                    return;
+                }
+
+                // Get content from the <code> element. textContent will decode HTML entities.
+                const htmlContent = editor.textContent; 
+                console.log('Updating viewer. HTML content length:', htmlContent ? htmlContent.length : 'null');
+                // For debugging, log the first 100 chars: console.log('Content snippet:', htmlContent ? htmlContent.substring(0,100) : '');
+
+
+                viewerDocument.open();
+                viewerDocument.write(htmlContent || ''); // Ensure something is written even if content is null
+                viewerDocument.close();
+                console.log('Viewer content updated.');
+
+            } catch (e) {
+                console.error('Error updating viewer:', e);
+                // Attempt to write an error message to the iframe itself
+                try {
+                    const errorDoc = viewer.contentDocument || viewer.contentWindow?.document;
+                    if (errorDoc) {
+                        errorDoc.open();
+                        errorDoc.write('<html><body><p style="color:red; font-family: sans-serif;">Error rendering preview. Check console.</p></body></html>');
+                        errorDoc.close();
+                    }
+                } catch (e2) { 
+                    console.error('Failed to write error to viewer iframe:', e2);
+                }
+            }
+        }
+        
+        if (editor) {
+            // Update viewer on input
+            editor.addEventListener('input', () => {
+                console.log('Editor input detected.');
+                updateViewer();
+            });
+
+            // Initial update of the viewer
+            // Use a small timeout to ensure editor content (and Prism modifications, if any) are settled.
+            setTimeout(() => {
+                console.log('Performing initial viewer update.');
+                updateViewer();
+            }, 100); // 100ms delay, adjust if needed
+        }
+        
+        // --- Download Button Logic ---
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                if (!editor) {
+                    console.error('Cannot download: Editor element not found.');
+                    return;
+                }
+                console.log('Download button clicked.');
+                try {
+                    const htmlToDownload = editor.textContent || '';
+                    const blob = new Blob([htmlToDownload], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'vibecoding-document.html';
+                    document.body.appendChild(a); // Required for Firefox
+                    a.click();
+                    document.body.removeChild(a); // Clean up
+                    URL.revokeObjectURL(url);
+                    console.log('HTML content download initiated.');
+                } catch (e) {
+                    console.error('Error creating download:', e);
+                }
+            });
+        }
+        console.log('Event listeners attached and initial setup complete.');
+    });
+    </script>
+</body>
+</html>
